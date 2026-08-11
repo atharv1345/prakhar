@@ -1,2 +1,2 @@
-/** Birthday surprise video — place the file at: public/videos/surprise.mp4 */
-export const BIRTHDAY_VIDEO_SRC = '/videos/surprise.mp4'
+/** Relative path so GitHub Pages (docs/) can load the embedded video. */
+export const BIRTHDAY_VIDEO_SRC = './videos/surprise.mp4'

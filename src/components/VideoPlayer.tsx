@@ -17,10 +17,7 @@ function formatTime(seconds: number) {
 export function VideoPlayer(props: VideoPlayerProps) {
   const { onContinue } = props
   const videoRef = useRef<HTMLVideoElement>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const objectUrlRef = useRef<string | null>(null)
 
-  const [src, setSrc] = useState(BIRTHDAY_VIDEO_SRC)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [playing, setPlaying] = useState(false)
@@ -30,23 +27,13 @@ export function VideoPlayer(props: VideoPlayerProps) {
   const [ended, setEnded] = useState(false)
 
   useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
-    }
-  }, [])
-
-  const loadFile = (file: File) => {
-    if (!file.type.startsWith('video/')) return
-    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
-    const url = URL.createObjectURL(file)
-    objectUrlRef.current = url
-    setFailed(false)
+    // Reset when source path changes (e.g. after rebuild)
     setReady(false)
-    setEnded(false)
+    setFailed(false)
     setProgress(0)
+    setEnded(false)
     setPlaying(false)
-    setSrc(url)
-  }
+  }, [])
 
   const togglePlay = async () => {
     const video = videoRef.current
@@ -74,10 +61,9 @@ export function VideoPlayer(props: VideoPlayerProps) {
       <div className="video-stage">
         {!failed ? (
           <video
-            key={src}
             ref={videoRef}
             className="video-el"
-            src={src}
+            src={BIRTHDAY_VIDEO_SRC}
             playsInline
             preload="metadata"
             autoPlay
@@ -94,27 +80,24 @@ export function VideoPlayer(props: VideoPlayerProps) {
             onPlay={() => {
               setPlaying(true)
               setEnded(false)
-              // Notify parent to pause background audio
               try {
                 props.onPlayStart?.()
-              } catch {}
+              } catch {
+                /* ignore */
+              }
             }}
             onPause={() => setPlaying(false)}
             onEnded={() => {
               setPlaying(false)
               setEnded(true)
               setProgress(100)
-              // Notify parent to resume background audio
               try {
                 props.onPlayEnd?.()
-              } catch {}
+              } catch {
+                /* ignore */
+              }
             }}
             onError={() => {
-              if (src.startsWith('blob:')) {
-                setFailed(true)
-                setReady(false)
-                return
-              }
               setFailed(true)
               setReady(false)
             }}
@@ -122,12 +105,12 @@ export function VideoPlayer(props: VideoPlayerProps) {
           />
         ) : (
           <div className="video-empty">
-            <p className="video-empty-title">Apni video yahan add karo</p>
+            <p className="video-empty-title">Video load nahi hui</p>
             <p className="video-empty-copy">
-              File ko <code>public/videos/surprise.mp4</code> naam se rakho, ya neeche se choose karo.
+              Hosted video path: <code>{BIRTHDAY_VIDEO_SRC}</code>
             </p>
-            <button type="button" className="primary-btn" onClick={() => fileRef.current?.click()}>
-              Choose video
+            <button type="button" className="primary-btn" onClick={onContinue}>
+              Continue to gift
             </button>
           </div>
         )}
@@ -151,7 +134,9 @@ export function VideoPlayer(props: VideoPlayerProps) {
                       setMuted(false)
                       await video.play()
                       props.onPlayStart?.()
-                    } catch {}
+                    } catch {
+                      /* ignore */
+                    }
                   }}
                 >
                   Play with sound
@@ -193,22 +178,7 @@ export function VideoPlayer(props: VideoPlayerProps) {
         >
           {muted ? 'Unmute' : 'Mute'}
         </button>
-        <button type="button" className="ghost-btn" onClick={() => fileRef.current?.click()}>
-          Change video
-        </button>
       </div>
-
-      <input
-        ref={fileRef}
-        type="file"
-        accept="video/*"
-        hidden
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          if (file) loadFile(file)
-          event.target.value = ''
-        }}
-      />
 
       <div className="video-actions">
         <button type="button" className="primary-btn" onClick={onContinue}>
