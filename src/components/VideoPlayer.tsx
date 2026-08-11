@@ -24,7 +24,7 @@ export function VideoPlayer(props: VideoPlayerProps) {
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [playing, setPlaying] = useState(false)
-  const [muted, setMuted] = useState(false)
+  const [muted, setMuted] = useState(true)
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const [ended, setEnded] = useState(false)
@@ -80,6 +80,8 @@ export function VideoPlayer(props: VideoPlayerProps) {
             src={src}
             playsInline
             preload="metadata"
+            autoPlay
+            muted={muted}
             onLoadedMetadata={(event) => {
               setDuration(event.currentTarget.duration)
               setReady(true)
@@ -131,9 +133,32 @@ export function VideoPlayer(props: VideoPlayerProps) {
         )}
 
         {ready && !playing && !ended ? (
-          <button type="button" className="play-burst" onClick={() => void togglePlay()} aria-label="Play video">
-            <span />
-          </button>
+          <>
+            <button type="button" className="play-burst" onClick={() => void togglePlay()} aria-label="Play video">
+              <span />
+            </button>
+
+            {muted ? (
+              <div className="video-unmute-overlay">
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={async () => {
+                    const video = videoRef.current
+                    if (!video) return
+                    try {
+                      video.muted = false
+                      setMuted(false)
+                      await video.play()
+                      props.onPlayStart?.()
+                    } catch {}
+                  }}
+                >
+                  Play with sound
+                </button>
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
 
