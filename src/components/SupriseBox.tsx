@@ -423,7 +423,7 @@ export function SupriseBox({ puzzleIndex, giftUnlocked, boxOpen, onSolved, onOpe
 
           {!giftUnlocked && activePuzzleId === 'word' ? (
             <div className="puzzle">
-              <p>Pick the secret word which Hide on my Heart</p>
+              <p>Pick the secret word which hide in my wishes</p>
               <div className="choice-stack compact">
                 {['LOVE', 'AVNITA', 'SMILE'].map((value) => (
                   <button key={value} type="button" className="choice-btn" onClick={() => handleWordChoice(value)} disabled={lockButtonsDisabled}>
